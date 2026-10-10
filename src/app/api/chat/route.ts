@@ -4,7 +4,11 @@ import { processPlayerReply, ChatContext } from '@/lib/chat-engine';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, context } = body;
+    let { message, context, messages } = body;
+
+    if (!message && messages && messages.length > 0) {
+      message = messages[messages.length - 1].content;
+    }
 
     if (typeof message !== 'string') {
       return NextResponse.json(
@@ -14,10 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!context) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid or missing context' },
-        { status: 400 }
-      );
+      context = { playerLevel: 1, playerName: 'Explorer' };
     }
 
     // This is using the rule-based chat engine for now.

@@ -68,16 +68,29 @@ export function generateWeatherComment(context: ChatContext): ChatMessage {
 }
 
 export function processPlayerReply(reply: string, context: ChatContext): ChatMessage {
-  // Simple keyword-based response logic for now
   const lowerReply = reply.toLowerCase();
-  let content = `I see. Let's keep moving forward!`;
+  let content = '';
   
-  if (lowerReply.includes('weather')) {
-    content = context.weather ? `Right now it's ${context.weather.description}. Prepare accordingly.` : 'The weather is mysterious right now.';
-  } else if (lowerReply.includes('quest')) {
-    content = `Check your quest log to see what adventures await near you.`;
-  } else if (lowerReply.includes('quiet') || lowerReply.includes('crowded') || lowerReply.includes('ancient')) {
+  if (lowerReply.includes('weather') || lowerReply.includes('vreme')) {
+    content = context.weather ? `Right now it's ${context.weather.description}. Prepare accordingly.` : 'The weather is mysterious right now, but I hope it is nice!';
+  } else if (lowerReply.includes('quest') || lowerReply.includes('misiun')) {
+    content = `Check your quest log to see what adventures await near you. I'm sure you'll find something exciting!`;
+  } else if (lowerReply.includes('quiet') || lowerReply.includes('crowded') || lowerReply.includes('ancient') || lowerReply.includes('frumos')) {
     content = `Fascinating! I'll add that detail to our shared map. Those are the kinds of observations that make you a great explorer.`;
+  } else if (lowerReply.includes('hello') || lowerReply.includes('hi') || lowerReply.includes('salut') || lowerReply.includes('buna')) {
+    content = `Greetings, ${context.playerName}! Ready for another adventure today?`;
+  } else if (lowerReply.includes('help') || lowerReply.includes('ajutor')) {
+    content = `I'm your guide! I can tell you about the weather, give you hints about your quests, or just chat about the places you discover.`;
+  } else {
+    // Randomized fallback responses for variety
+    const fallbacks = [
+      `I see. Let's keep moving forward!`,
+      `Interesting! Tell me more when you have a moment.`,
+      `The journey is long, but every step counts.`,
+      `Good to know. Keep your eyes open for hidden spots!`,
+      `Got it. I'll be here if you need any guidance.`
+    ];
+    content = fallbacks[Math.floor(Math.random() * fallbacks.length)];
   }
 
   return {

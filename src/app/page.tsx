@@ -67,7 +67,14 @@ export default function Home() {
   };
 
   const handleStartAdventure = async () => {
-    const started = await startAdventure(false); // Can change to true for demo
+    let started = await startAdventure(false);
+    
+    // Fallback to demo mode (Mărișel) if real GPS fails (e.g. over HTTP on local network)
+    if (!started) {
+      addSystemMessage('Nu am putut obține locația GPS reală. Folosim locația de test: Mărișel.');
+      started = await startAdventure(true);
+    }
+    
     if (started) {
       addSystemMessage('Welcome to your new adventure! I will be your guide. Check the map and your active quests to get started.');
     }

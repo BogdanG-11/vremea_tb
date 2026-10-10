@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let radius = 1500;
+    let radius = 5000;
     if (radiusStr) {
       const r = parseInt(radiusStr, 10);
       if (!isNaN(r)) {
@@ -37,12 +37,15 @@ export async function GET(request: NextRequest) {
     const overpassQuery = `
       [out:json][timeout:15];
       (
-        node["amenity"~"cafe|restaurant"](around:${radius},${lat},${lon});
-        node["leisure"="park"](around:${radius},${lat},${lon});
-        node["tourism"~"museum|attraction"](around:${radius},${lat},${lon});
-        node["historic"~"monument|memorial"](around:${radius},${lat},${lon});
+        node["amenity"~"cafe|restaurant|place_of_worship"](around:${radius},${lat},${lon});
+        node["leisure"~"park|nature_reserve"](around:${radius},${lat},${lon});
+        node["tourism"~"museum|attraction|viewpoint|guest_house|hotel|chalet"](around:${radius},${lat},${lon});
+        node["historic"~"monument|memorial|ruins|wayside_cross"](around:${radius},${lat},${lon});
+        node["natural"~"peak|spring|water"](around:${radius},${lat},${lon});
+        node["sport"~"skiing"](around:${radius},${lat},${lon});
+        way["piste:type"](around:${radius},${lat},${lon});
       );
-      out body;
+      out body center;
       >;
       out skel qt;
     `;
@@ -73,24 +76,25 @@ export async function GET(request: NextRequest) {
         const data = await response.json();
         if (data && data.elements) {
           const parsedPlaces = data.elements.map((element: any) => {
-            const name = element.tags?.name || 'Unknown Location';
+            const name = element.tags?.name || (element.tags?.['piste:type'] ? 'Pârtie de schi' : 'Loc de interes');
             let category = 'other';
             if (element.tags?.amenity) category = element.tags.amenity;
             else if (element.tags?.leisure) category = element.tags.leisure;
             else if (element.tags?.tourism) category = element.tags.tourism;
             else if (element.tags?.historic) category = element.tags.historic;
+            else if (element.tags?.natural) category = element.tags.natural;
+            else if (element.tags?.['piste:type'] || element.tags?.sport === 'skiing') category = 'ski';
 
             return {
               id: element.id.toString(),
               name,
               category: category as any,
-              lat: element.lat,
-              lon: element.lon,
+              lat: element.lat || element.center?.lat,
+              lon: element.lon || element.center?.lon,
             };
           });
 
           places = parsedPlaces
-            .filter((p: Place) => p.name !== 'Unknown Location')
             .map((p: Place) => ({
               ...p,
               distance: haversineDistance(lat, lon, p.lat, p.lon)
@@ -115,14 +119,14 @@ export async function GET(request: NextRequest) {
       });
 
       places = [
-        generateDemoPlace('d1', 'Central Park', 'park', 0.005, 0.002),
-        generateDemoPlace('d2', 'The Old Cafe', 'cafe', -0.002, 0.003),
-        generateDemoPlace('d3', 'City Museum', 'museum', 0.008, -0.001),
-        generateDemoPlace('d4', 'Heroes Monument', 'monument', -0.004, -0.005),
-        generateDemoPlace('d5', 'Local Restaurant', 'restaurant', 0.001, 0.008),
-        generateDemoPlace('d6', 'Riverside Park', 'park', -0.006, 0.007),
-        generateDemoPlace('d7', 'Historic Memorial', 'memorial', 0.003, -0.006),
-        generateDemoPlace('d8', 'Tourist Attraction', 'attraction', 0.009, 0.004),
+        generateDemoPlace('d1', 'Pârtia de schi', 'ski', 0.005, 0.002),
+        generateDemoPlace('d2', 'Cabana Rustică', 'hotel', -0.002, 0.003),
+        generateDemoPlace('d3', 'Vârful Înalt', 'peak', 0.008, -0.001),
+        generateDemoPlace('d4', 'Biserica de lemn', 'place_of_worship', -0.004, -0.005),
+        generateDemoPlace('d5', 'Restaurant Tradițional', 'restaurant', 0.001, 0.008),
+        generateDemoPlace('d6', 'Poiana Mare', 'park', -0.006, 0.007),
+        generateDemoPlace('d7', 'Troița Veche', 'historic', 0.003, -0.006),
+        generateDemoPlace('d8', 'Punct de belvedere', 'viewpoint', 0.009, 0.004),
       ].sort((a, b) => (a.distance || 0) - (b.distance || 0));
 
       return NextResponse.json(

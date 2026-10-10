@@ -5,11 +5,11 @@ export const GAME_CONFIG = {
   questCompletionRadius: 75, // meters
   maxQuestsPerAdventure: 5,
   minQuestsPerAdventure: 3,
-  defaultSearchRadius: 1500, // meters for Overpass
+  defaultSearchRadius: 5000, // meters for Overpass
   gpsTimeout: 15000,
   gpsMaxAge: 30000,
   weatherRefreshInterval: 300000, // 5 minutes
-  demoLocation: { lat: 44.4268, lon: 26.1025, name: 'Bucharest' }
+  demoLocation: { lat: 46.6667, lon: 23.1167, name: 'Mărișel' }
 };
 
 export const QUEST_TEMPLATES: Record<QuestCategory, { name: string; descriptionTemplate: string; xpBase: number; difficulty: 'easy' | 'medium' | 'hard' }> = {

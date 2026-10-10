@@ -40,12 +40,12 @@ export function useChat() {
 
       if (!res.ok) throw new Error('Chat API error');
 
-      const data = await res.json();
+      const responseBody = await res.json();
       
       const assistantMsg: ChatMessage = {
         id: Math.random().toString(36).substring(7),
         role: 'guide',
-        content: data.reply,
+        content: responseBody.data?.reply?.content || 'I have nothing to say.',
         timestamp: Date.now(),
       };
 

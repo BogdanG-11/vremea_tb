@@ -69,7 +69,7 @@ export default function GameMap({
 
   const defaultCenter: [number, number] = playerPosition 
     ? [playerPosition.lat, playerPosition.lon] 
-    : [44.4268, 26.1025]; // Default
+    : [46.6667, 23.1167]; // Default to Mărișel
 
   return (
     <div className="h-full w-full relative z-0">
