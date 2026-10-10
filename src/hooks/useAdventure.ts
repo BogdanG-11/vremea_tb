@@ -21,9 +21,10 @@ export function useAdventure() {
     try {
       const res = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
       if (!res.ok) throw new Error('Failed to fetch weather');
-      const data = await res.json();
-      setWeather(data);
-      return data;
+      const responseBody = await res.json();
+      const weatherData = responseBody.data;
+      setWeather(weatherData);
+      return weatherData;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Weather error');
       throw err;
@@ -34,9 +35,10 @@ export function useAdventure() {
     try {
       const res = await fetch(`/api/places?lat=${lat}&lon=${lon}`);
       if (!res.ok) throw new Error('Failed to fetch places');
-      const data = await res.json();
-      setPlaces(data);
-      return data;
+      const responseBody = await res.json();
+      const placesData = responseBody.data.places;
+      setPlaces(placesData);
+      return placesData;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Places error');
       throw err;
@@ -51,9 +53,10 @@ export function useAdventure() {
         body: JSON.stringify({ lat, lon, weather: weatherData, places: placesData }),
       });
       if (!res.ok) throw new Error('Failed to generate quests');
-      const data = await res.json();
-      setQuests(data);
-      return data;
+      const responseBody = await res.json();
+      const generatedQuests = responseBody.data.quests;
+      setQuests(generatedQuests);
+      return generatedQuests;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Quests error');
       throw err;
@@ -109,7 +112,15 @@ export function useAdventure() {
       const res = await fetch('/api/quests/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questId: quest.id }),
+        body: JSON.stringify({
+          questId: quest.id,
+          playerLat: position?.lat || 0,
+          playerLon: position?.lon || 0,
+          questTargetLat: quest.targetLat,
+          questTargetLon: quest.targetLon,
+          xpReward: quest.xpReward,
+          manual: demoMode || true // always allow manual/demo for testing MVP
+        }),
       });
       if (!res.ok) throw new Error('Failed to complete quest');
       
